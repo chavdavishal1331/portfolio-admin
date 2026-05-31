@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import api from "../api/api";
+import { getApiErrorMessage } from "../utils/apiError";
 
 const emptyExp = { company: "", role: "", year: "", duration: "", color: "#8B5CF6" };
 
@@ -37,8 +38,11 @@ function ExperienceManager() {
       }
       setModalOpen(false);
       fetchItems();
-    } catch {
-      setMessage({ type: "error", text: "Failed to save" });
+    } catch (err) {
+      setMessage({
+        type: "error",
+        text: getApiErrorMessage(err, "Failed to save experience"),
+      });
     }
   };
 

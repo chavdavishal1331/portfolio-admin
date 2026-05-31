@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import api from "../api/api";
+import { getApiErrorMessage } from "../utils/apiError";
 import { ICON_OPTIONS, getSkillIcon } from "../utils/skillIcons";
 
 const emptySkill = { name: "", percentage: 80, icon: "FaReact", color: "#8B5CF6" };
@@ -53,8 +54,11 @@ function SkillsManager() {
       }
       setModalOpen(false);
       fetchSkills();
-    } catch {
-      setMessage({ type: "error", text: "Failed to save skill" });
+    } catch (err) {
+      setMessage({
+        type: "error",
+        text: getApiErrorMessage(err, "Failed to save skill"),
+      });
     }
   };
 

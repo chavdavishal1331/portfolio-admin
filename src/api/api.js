@@ -3,15 +3,12 @@ import axios from "axios";
 export const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL || "https://portfolio-backend-ro4m.onrender.com";
 
-// Dev: Vite proxy. Prod: direct backend (CORS enabled) — Render API proxy is unreliable for POST.
-const apiBase = import.meta.env.DEV ? "/api" : `${BACKEND_URL}/api`;
+// Same-origin /api — admin server proxies to backend (JSON + file uploads)
+export const API_BASE = "";
 
 const api = axios.create({
-  baseURL: apiBase,
+  baseURL: "/api",
   timeout: 120000,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 api.interceptors.request.use((config) => {
@@ -23,6 +20,8 @@ api.interceptors.request.use((config) => {
 
   if (config.data instanceof FormData) {
     delete config.headers["Content-Type"];
+  } else if (!config.headers["Content-Type"]) {
+    config.headers["Content-Type"] = "application/json";
   }
 
   if ((config.method || "get").toLowerCase() === "get") {

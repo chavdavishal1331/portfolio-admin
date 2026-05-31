@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import api from "../api/api";
 import { getImageUrl } from "../utils/imageUrl";
+import { getApiErrorMessage } from "../utils/apiError";
 
 const emptyProject = { title: "", description: "", tech: "", githubLink: "", liveLink: "" };
 
@@ -62,7 +63,7 @@ function ProjectsManager() {
     try {
       const body = buildFormData();
       if (editing) {
-        await api.put(`/projects/${editing._id}`, body);
+        await api.post(`/projects/${editing._id}`, body);
         setMessage({ type: "success", text: "Project updated" });
       } else {
         await api.post("/projects", body);
@@ -73,7 +74,7 @@ function ProjectsManager() {
     } catch (err) {
       setMessage({
         type: "error",
-        text: err.response?.data?.message || "Failed to save project",
+        text: getApiErrorMessage(err, "Failed to save project"),
       });
     } finally {
       setSaving(false);
