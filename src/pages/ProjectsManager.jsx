@@ -3,6 +3,7 @@ import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import api from "../api/api";
 import { getImageUrl } from "../utils/imageUrl";
 import { getApiErrorMessage } from "../utils/apiError";
+import { assertSavedItem, fetchList } from "../utils/fetchList";
 
 const emptyProject = { title: "", description: "", tech: "", githubLink: "", liveLink: "" };
 
@@ -17,11 +18,20 @@ function ProjectsManager() {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [saving, setSaving] = useState(false);
 
-  const fetchProjects = () => {
-    api.get("/projects").then(({ data }) => setProjects(data || [])).finally(() => setLoading(false));
+  const loadProjects = async () => {
+    setLoading(true);
+    await fetchList(
+      () => api.get("/projects"),
+      setProjects,
+      (text) => text && setMessage({ type: "error", text }),
+      "projects"
+    );
+    setLoading(false);
   };
 
-  useEffect(() => { fetchProjects(); }, []);
+  useEffect(() => {
+    loadProjects();
+  }, []);
 
   const openAdd = () => {
     setEditing(null);
@@ -63,14 +73,16 @@ function ProjectsManager() {
     try {
       const body = buildFormData();
       if (editing) {
-        await api.post(`/projects/${editing._id}`, body);
+        const { data } = await api.post(`/projects/${editing._id}`, body);
+        assertSavedItem(data, "Project");
         setMessage({ type: "success", text: "Project updated" });
       } else {
-        await api.post("/projects", body);
+        const { data } = await api.post("/projects", body);
+        assertSavedItem(data, "Project");
         setMessage({ type: "success", text: "Project added" });
       }
       setModalOpen(false);
-      fetchProjects();
+      await loadProjects();
     } catch (err) {
       setMessage({
         type: "error",
@@ -86,7 +98,7 @@ function ProjectsManager() {
     try {
       await api.delete(`/projects/${id}`);
       setMessage({ type: "success", text: "Project deleted" });
-      fetchProjects();
+      await loadProjects();
     } catch {
       setMessage({ type: "error", text: "Failed to delete" });
     }

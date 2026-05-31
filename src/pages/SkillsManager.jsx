@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import api from "../api/api";
 import { getApiErrorMessage } from "../utils/apiError";
+import { assertSavedItem, fetchList } from "../utils/fetchList";
 import { ICON_OPTIONS, getSkillIcon } from "../utils/skillIcons";
 
 const emptySkill = { name: "", percentage: 80, icon: "FaReact", color: "#8B5CF6" };
@@ -14,15 +15,19 @@ function SkillsManager() {
   const [form, setForm] = useState(emptySkill);
   const [message, setMessage] = useState({ type: "", text: "" });
 
-  const fetchSkills = () => {
-    api
-      .get("/skills")
-      .then(({ data }) => setSkills(data || []))
-      .finally(() => setLoading(false));
+  const loadSkills = async () => {
+    setLoading(true);
+    await fetchList(
+      () => api.get("/skills"),
+      setSkills,
+      (text) => text && setMessage({ type: "error", text }),
+      "skills"
+    );
+    setLoading(false);
   };
 
   useEffect(() => {
-    fetchSkills();
+    loadSkills();
   }, []);
 
   const openAdd = () => {
@@ -46,14 +51,16 @@ function SkillsManager() {
     e.preventDefault();
     try {
       if (editing) {
-        await api.put(`/skills/${editing._id}`, form);
+        const { data } = await api.put(`/skills/${editing._id}`, form);
+        assertSavedItem(data, "Skill");
         setMessage({ type: "success", text: "Skill updated" });
       } else {
-        await api.post("/skills", form);
+        const { data } = await api.post("/skills", form);
+        assertSavedItem(data, "Skill");
         setMessage({ type: "success", text: "Skill added" });
       }
       setModalOpen(false);
-      fetchSkills();
+      await loadSkills();
     } catch (err) {
       setMessage({
         type: "error",
@@ -67,7 +74,7 @@ function SkillsManager() {
     try {
       await api.delete(`/skills/${id}`);
       setMessage({ type: "success", text: "Skill deleted" });
-      fetchSkills();
+      await loadSkills();
     } catch {
       setMessage({ type: "error", text: "Failed to delete" });
     }

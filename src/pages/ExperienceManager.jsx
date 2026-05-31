@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import api from "../api/api";
 import { getApiErrorMessage } from "../utils/apiError";
+import { assertSavedItem, fetchList } from "../utils/fetchList";
 
 const emptyExp = { company: "", role: "", year: "", duration: "", color: "#8B5CF6" };
 
@@ -13,11 +14,20 @@ function ExperienceManager() {
   const [form, setForm] = useState(emptyExp);
   const [message, setMessage] = useState({ type: "", text: "" });
 
-  const fetchItems = () => {
-    api.get("/experience").then(({ data }) => setItems(data || [])).finally(() => setLoading(false));
+  const loadItems = async () => {
+    setLoading(true);
+    await fetchList(
+      () => api.get("/experience"),
+      setItems,
+      (text) => text && setMessage({ type: "error", text }),
+      "experience"
+    );
+    setLoading(false);
   };
 
-  useEffect(() => { fetchItems(); }, []);
+  useEffect(() => {
+    loadItems();
+  }, []);
 
   const openAdd = () => { setEditing(null); setForm(emptyExp); setModalOpen(true); };
   const openEdit = (item) => {
@@ -30,14 +40,16 @@ function ExperienceManager() {
     e.preventDefault();
     try {
       if (editing) {
-        await api.put(`/experience/${editing._id}`, form);
+        const { data } = await api.put(`/experience/${editing._id}`, form);
+        assertSavedItem(data, "Experience");
         setMessage({ type: "success", text: "Experience updated" });
       } else {
-        await api.post("/experience", form);
+        const { data } = await api.post("/experience", form);
+        assertSavedItem(data, "Experience");
         setMessage({ type: "success", text: "Experience added" });
       }
       setModalOpen(false);
-      fetchItems();
+      await loadItems();
     } catch (err) {
       setMessage({
         type: "error",
@@ -51,7 +63,7 @@ function ExperienceManager() {
     try {
       await api.delete(`/experience/${id}`);
       setMessage({ type: "success", text: "Deleted" });
-      fetchItems();
+      await loadItems();
     } catch {
       setMessage({ type: "error", text: "Failed to delete" });
     }

@@ -3,11 +3,13 @@ import axios from "axios";
 export const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL || "https://portfolio-backend-ro4m.onrender.com";
 
-// Same-origin /api — admin server proxies to backend (JSON + file uploads)
-export const API_BASE = "";
+// Dev: Vite proxy. Production: direct backend (Render static deploy has no /api proxy).
+export const API_BASE = import.meta.env.DEV ? "" : BACKEND_URL;
+
+const apiBase = import.meta.env.DEV ? "/api" : `${BACKEND_URL}/api`;
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: apiBase,
   timeout: 120000,
 });
 
@@ -20,7 +22,11 @@ api.interceptors.request.use((config) => {
 
   if (config.data instanceof FormData) {
     delete config.headers["Content-Type"];
-  } else if (!config.headers["Content-Type"]) {
+  } else if (
+    config.data &&
+    typeof config.data === "object" &&
+    !(config.data instanceof FormData)
+  ) {
     config.headers["Content-Type"] = "application/json";
   }
 
@@ -34,7 +40,15 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const data = response.data;
+    if (typeof data === "string" && /not found|<!doctype html>/i.test(data)) {
+      return Promise.reject(
+        Object.assign(new Error("API returned invalid response"), { response })
+      );
+    }
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("adminToken");

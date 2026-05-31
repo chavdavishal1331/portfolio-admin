@@ -20,10 +20,12 @@ function Dashboard() {
     ])
       .then(([skills, projects, experience, messages]) => {
         setStats({
-          skills: skills.data?.length || 0,
-          projects: projects.data?.length || 0,
-          experience: experience.data?.length || 0,
-          messages: messages.data?.length || 0,
+          skills: Array.isArray(skills.data) ? skills.data.length : 0,
+          projects: Array.isArray(projects.data) ? projects.data.length : 0,
+          experience: Array.isArray(experience.data)
+            ? experience.data.length
+            : 0,
+          messages: Array.isArray(messages.data) ? messages.data.length : 0,
         });
       })
       .finally(() => setLoading(false));

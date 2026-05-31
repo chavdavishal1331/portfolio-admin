@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import api from "../api/api";
 import { getImageUrl } from "../utils/imageUrl";
 import { getApiErrorMessage } from "../utils/apiError";
+import { assertSavedItem } from "../utils/fetchList";
 
 const empty = {
   name: "",
@@ -94,6 +95,7 @@ function ProfileManager() {
 
       // POST (not PUT) — multipart file upload is reliable on all hosts
       const { data } = await api.post("/profile", body);
+      assertSavedItem(data, "Profile");
       clearBlobPreview();
       setImageFile(null);
       setResumeFile(null);
