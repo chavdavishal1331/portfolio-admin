@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/api";
+import { getApiErrorMessage } from "../utils/apiError";
 
 function Dashboard() {
   const [stats, setStats] = useState({
@@ -10,8 +11,11 @@ function Dashboard() {
     messages: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [notice, setNotice] = useState({ type: "", text: "" });
+  const [clearing, setClearing] = useState(false);
 
-  useEffect(() => {
+  const loadStats = useCallback(() => {
+    setLoading(true);
     Promise.all([
       api.get("/skills"),
       api.get("/projects"),
@@ -31,6 +35,37 @@ function Dashboard() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
+
+  const handleClearAll = async () => {
+    if (
+      !window.confirm(
+        "Delete ALL portfolio content (profile, skills, projects, experience, messages)? Admin login will stay."
+      )
+    ) {
+      return;
+    }
+    setClearing(true);
+    setNotice({ type: "", text: "" });
+    try {
+      const { data } = await api.post("/admin/clear-content");
+      setNotice({
+        type: "success",
+        text: data.message || "All content deleted",
+      });
+      loadStats();
+    } catch (err) {
+      setNotice({
+        type: "error",
+        text: getApiErrorMessage(err, "Could not clear content"),
+      });
+    } finally {
+      setClearing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="admin-loading">
@@ -41,6 +76,10 @@ function Dashboard() {
 
   return (
     <>
+      {notice.text && (
+        <div className={`admin-alert admin-alert-${notice.type}`}>{notice.text}</div>
+      )}
+
       <div className="admin-stats">
         <div className="admin-stat-card">
           <h3>{stats.skills}</h3>
@@ -85,6 +124,19 @@ function Dashboard() {
             <strong>Messages</strong>
             <span>Contact form submissions</span>
           </Link>
+        </div>
+
+        <div className="admin-danger-zone">
+          <h3>Danger zone</h3>
+          <p>Remove all portfolio content and start fresh. Your admin account is kept.</p>
+          <button
+            type="button"
+            className="admin-btn admin-btn-danger"
+            onClick={handleClearAll}
+            disabled={clearing}
+          >
+            {clearing ? "Deleting..." : "Delete all content"}
+          </button>
         </div>
       </div>
     </>

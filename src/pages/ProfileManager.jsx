@@ -3,6 +3,7 @@ import api from "../api/api";
 import { getImageUrl } from "../utils/imageUrl";
 import { getApiErrorMessage } from "../utils/apiError";
 import { assertSavedItem } from "../utils/fetchList";
+import { usePreloadedSrc } from "../hooks/usePreloadedSrc";
 
 const empty = {
   name: "",
@@ -36,9 +37,10 @@ function applyProfileToState(data, setters) {
     location: data.location || "",
   });
 
-  const version = data.updatedAt || data.image || "";
+  const version = data.updatedAt && data.image
+    ? `${data.updatedAt}-${data.image}`
+    : data.image || "";
   setImageCacheKey(version);
-  setPreviewVisible(false);
   setPreview(data.image ? getImageUrl(data.image, version) : "");
   setCurrentResume(data.resume || "");
 }
@@ -48,7 +50,7 @@ function ProfileManager() {
   const [imageFile, setImageFile] = useState(null);
   const [resumeFile, setResumeFile] = useState(null);
   const [preview, setPreview] = useState("");
-  const [previewVisible, setPreviewVisible] = useState(false);
+  const [blobPreview, setBlobPreview] = useState("");
   const [imageCacheKey, setImageCacheKey] = useState("");
   const [currentResume, setCurrentResume] = useState("");
   const [loading, setLoading] = useState(true);
@@ -56,11 +58,17 @@ function ProfileManager() {
   const [message, setMessage] = useState({ type: "", text: "" });
   const blobPreviewRef = useRef(null);
 
+  const serverImageUrl =
+    !blobPreview && preview ? preview : null;
+  const { src: preloadedImage, ready: imagePreloaded } =
+    usePreloadedSrc(serverImageUrl);
+
   const clearBlobPreview = () => {
     if (blobPreviewRef.current) {
       URL.revokeObjectURL(blobPreviewRef.current);
       blobPreviewRef.current = null;
     }
+    setBlobPreview("");
   };
 
   const loadProfile = () =>
@@ -237,20 +245,28 @@ function ProfileManager() {
                 setImageFile(file);
                 const blobUrl = URL.createObjectURL(file);
                 blobPreviewRef.current = blobUrl;
-                setPreviewVisible(false);
-                setPreview(blobUrl);
+                setPreview("");
+                setBlobPreview(blobUrl);
               }
             }}
           />
-          {preview && (
+          {blobPreview && (
             <img
-              key={`${imageCacheKey}-${preview}`}
-              src={preview}
+              src={blobPreview}
               alt="Profile preview"
-              className={`admin-image-preview ${previewVisible ? "is-visible" : ""}`}
-              onLoad={() => setPreviewVisible(true)}
-              onError={() => setPreviewVisible(true)}
+              className="admin-image-preview is-visible"
             />
+          )}
+          {!blobPreview && preloadedImage && imagePreloaded && (
+            <img
+              key={imageCacheKey}
+              src={preloadedImage}
+              alt="Profile preview"
+              className="admin-image-preview is-visible"
+            />
+          )}
+          {!blobPreview && preview && !imagePreloaded && (
+            <div className="admin-image-preview profile-image-placeholder" />
           )}
           {imageFile && (
             <p className="file-hint">New image selected — click Save Profile to upload.</p>

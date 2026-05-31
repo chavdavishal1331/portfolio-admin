@@ -396,6 +396,33 @@ body {
 .admin-quick-link strong { display: block; margin-bottom: 4px; }
 .admin-quick-link span { font-size: 0.8rem; color: var(--admin-muted); }
 
+.admin-danger-zone {
+  margin-top: 32px;
+  padding: 20px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: var(--admin-radius);
+  background: rgba(239, 68, 68, 0.06);
+}
+
+.admin-danger-zone h3 {
+  color: var(--admin-danger);
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.admin-danger-zone p {
+  color: var(--admin-muted);
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.profile-image-placeholder {
+  background: rgba(139, 92, 246, 0.12);
+  border-radius: 8px;
+  min-height: 80px;
+  min-width: 80px;
+}
+
 /* Loading */
 .admin-loading {
   display: flex;
