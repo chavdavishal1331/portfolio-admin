@@ -3,6 +3,12 @@ export function getApiErrorMessage(err, fallback = "Something went wrong. Try ag
   if (typeof err.response?.data === "string" && err.response.data.trim()) {
     return err.response.data;
   }
+  if (err.response?.status === 401) {
+    return "Session expired. Please log in again.";
+  }
+  if (err.response?.status === 413) {
+    return "File is too large. Use an image under 10 MB.";
+  }
   if (err.response?.status === 502) {
     return "Backend server unavailable. Wait 30 seconds and try again.";
   }

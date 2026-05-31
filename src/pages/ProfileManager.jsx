@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import api from "../api/api";
 import { getImageUrl } from "../utils/imageUrl";
+import { getApiErrorMessage } from "../utils/apiError";
 
 const empty = {
   name: "",
@@ -106,7 +107,7 @@ function ProfileManager() {
     } catch (err) {
       setMessage({
         type: "error",
-        text: err.response?.data?.message || "Failed to save",
+        text: getApiErrorMessage(err, "Failed to save profile"),
       });
     } finally {
       setSaving(false);
