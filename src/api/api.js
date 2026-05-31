@@ -1,11 +1,15 @@
 import axios from "axios";
 
-// 🔥 LIVE BACKEND URL (Render)
-export const API_BASE = "https://portfolio-backend-ro4m.onrender.com";
+export const BACKEND_URL =
+  import.meta.env.VITE_BACKEND_URL || "https://portfolio-backend-ro4m.onrender.com";
 
-// ⚡ Axios instance
+// Empty VITE_API_BASE = use same-origin /api proxy (Web Service on Render)
+const useProxy = import.meta.env.VITE_API_BASE === "";
+
+export const API_BASE = useProxy ? "" : import.meta.env.VITE_API_BASE || BACKEND_URL;
+
 const api = axios.create({
-  baseURL: `${API_BASE}/api`,
+  baseURL: useProxy ? "/api" : `${API_BASE}/api`,
   timeout: 60000,
   headers: {
     "Content-Type": "application/json",

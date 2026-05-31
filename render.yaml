@@ -1,8 +1,15 @@
-staticSites:
-  - name: portfolio-admin
+services:
+  - type: web
+    name: portfolio-admin
+    runtime: node
     buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: BACKEND_URL
+        value: https://portfolio-backend-ro4m.onrender.com
+      - key: VITE_API_BASE
+        value: ""
+      - key: VITE_BACKEND_URL
+        value: https://portfolio-backend-ro4m.onrender.com
