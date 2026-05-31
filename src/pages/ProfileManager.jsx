@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import api from "../api/api";
 import { getImageUrl } from "../utils/imageUrl";
 import { getApiErrorMessage } from "../utils/apiError";
-import { assertSavedItem } from "../utils/fetchList";
 import { notifyPortfolioUpdate } from "../utils/notifyPortfolioUpdate";
 import { viewSiteLink } from "../utils/viewSite";
 import SaveAlert from "../components/SaveAlert";
@@ -114,7 +113,9 @@ function ProfileManager() {
       if (resumeFile) body.append("resume", resumeFile);
 
       const { data } = await api.post("/profile", body);
-      assertSavedItem(data, "Profile");
+      if (!data || typeof data !== "object") {
+        throw new Error("Server did not return profile data. Try again.");
+      }
       clearBlobPreview();
       setImageFile(null);
       setResumeFile(null);
@@ -162,7 +163,7 @@ function ProfileManager() {
         <div className="admin-form-row">
           <div className="admin-form-group">
             <label>Full Name (optional)</label>
-            <input name="name" value={form.name} onChange={handleChange} />
+            <input name="name" value={form.name} onChange={handleChange} aria-required="false" />
           </div>
           <div className="admin-form-group">
             <label>Primary Role (optional)</label>
@@ -192,36 +193,36 @@ function ProfileManager() {
 
         <div className="admin-form-row">
           <div className="admin-form-group">
-            <label>Experience Stat</label>
+            <label>Experience Stat (optional)</label>
             <input name="experience" value={form.experience} onChange={handleChange} placeholder="8+ Months" />
           </div>
           <div className="admin-form-group">
-            <label>Projects Stat</label>
+            <label>Projects Stat (optional)</label>
             <input name="projects" value={form.projects} onChange={handleChange} placeholder="2+ Completed" />
           </div>
           <div className="admin-form-group">
-            <label>Clients Stat</label>
+            <label>Clients Stat (optional)</label>
             <input name="clients" value={form.clients} onChange={handleChange} placeholder="2+ Happy Clients" />
           </div>
         </div>
 
         <div className="admin-form-row">
           <div className="admin-form-group">
-            <label>Email</label>
+            <label>Email (optional)</label>
             <input type="text" name="email" value={form.email} onChange={handleChange} />
           </div>
           <div className="admin-form-group">
-            <label>Phone</label>
+            <label>Phone (optional)</label>
             <input name="phone" value={form.phone} onChange={handleChange} />
           </div>
           <div className="admin-form-group">
-            <label>Location</label>
+            <label>Location (optional)</label>
             <input name="location" value={form.location} onChange={handleChange} />
           </div>
         </div>
 
         <div className="admin-form-group">
-          <label>Resume PDF</label>
+          <label>Resume PDF (optional)</label>
           <input
             type="file"
             accept="application/pdf,.pdf"
@@ -248,7 +249,7 @@ function ProfileManager() {
         </div>
 
         <div className="admin-form-group">
-          <label>Profile Image</label>
+          <label>Profile Image (optional)</label>
           <input
             type="file"
             accept="image/*"

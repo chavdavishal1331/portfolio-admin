@@ -227,6 +227,19 @@ body {
   font-family: inherit;
 }
 
+/* Profile: nothing is required */
+.admin-form input:invalid,
+.admin-form textarea:invalid,
+.admin-form select:invalid {
+  box-shadow: none;
+}
+
+.admin-form input:required,
+.admin-form textarea:required,
+.admin-form select:required {
+  box-shadow: none;
+}
+
 .admin-form-group input:focus,
 .admin-form-group textarea:focus,
 .admin-form-group select:focus {
