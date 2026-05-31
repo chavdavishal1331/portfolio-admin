@@ -31,7 +31,7 @@ function App() {
         <Route path="experience" element={<ExperienceManager />} />
         <Route path="messages" element={<MessagesManager />} />
       </Route>
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }
