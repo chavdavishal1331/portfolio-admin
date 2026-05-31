@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import api from "../api/api";
 import { getApiBase, getBackendUrl, initApiBase } from "../utils/getApiBase.js";
+import { checkBackendHealth } from "../utils/checkHealth.js";
 
-const WAKE_RETRIES = 4;
-const WAKE_DELAY_MS = 12000;
+const WAKE_RETRIES = 5;
+const WAKE_DELAY_MS = 15000;
 
 function BackendStatus() {
   const [status, setStatus] = useState("checking");
@@ -18,14 +18,12 @@ function BackendStatus() {
 
     for (let attempt = 0; attempt < WAKE_RETRIES; attempt += 1) {
       try {
-        const { data } = await api.get("/health");
-        if (data?.ok) {
-          setStatus("ok");
-          setVersion(data.version || "");
-          return;
-        }
+        const data = await checkBackendHealth();
+        setStatus("ok");
+        setVersion(data.version || "");
+        return;
       } catch {
-        /* Render cold start — retry */
+        /* Render cold start or CORS — retry */
       }
       if (attempt < WAKE_RETRIES - 1) {
         await new Promise((r) => setTimeout(r, WAKE_DELAY_MS));

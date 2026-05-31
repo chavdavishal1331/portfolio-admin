@@ -10,8 +10,13 @@ const api = axios.create({
   timeout: 120000,
 });
 
+let baseReady = initApiBase().then((base) => {
+  api.defaults.baseURL = base;
+  return base;
+});
+
 api.interceptors.request.use(async (config) => {
-  config.baseURL = await initApiBase();
+  config.baseURL = (await baseReady) || (await initApiBase());
 
   const token = localStorage.getItem("adminToken");
 
@@ -30,8 +35,6 @@ api.interceptors.request.use(async (config) => {
   }
 
   if ((config.method || "get").toLowerCase() === "get") {
-    config.headers["Cache-Control"] = "no-cache";
-    config.headers.Pragma = "no-cache";
     config.params = { ...config.params, _t: Date.now() };
   }
 
