@@ -18,4 +18,4 @@ services:
       - key: VITE_BACKEND_URL
         value: https://portfolio-backend-ro4m.onrender.com
       - key: VITE_FRONTEND_URL
-        value: https://portfolio-frontend-oc7t.onrender.com
+        value: https://portfolio-frontend-blu4.onrender.com

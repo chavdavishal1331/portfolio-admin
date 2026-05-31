@@ -87,7 +87,7 @@ function AdminLayout() {
           <a
             href={
               import.meta.env.VITE_FRONTEND_URL ||
-              "https://portfolio-frontend-oc7t.onrender.com"
+              "https://portfolio-frontend-blu4.onrender.com"
             }
             target="_blank"
             rel="noopener noreferrer"
