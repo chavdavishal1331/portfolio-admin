@@ -3,7 +3,10 @@ import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import api from "../api/api";
 import { getImageUrl } from "../utils/imageUrl";
 import { getApiErrorMessage } from "../utils/apiError";
-import { assertSavedItem, fetchList } from "../utils/fetchList";
+import { fetchList } from "../utils/fetchList";
+import { verifyInList } from "../utils/verifySave";
+import { viewSiteLink } from "../utils/viewSite";
+import SaveAlert from "../components/SaveAlert";
 
 const emptyProject = { title: "", description: "", tech: "", githubLink: "", liveLink: "" };
 
@@ -20,13 +23,14 @@ function ProjectsManager() {
 
   const loadProjects = async () => {
     setLoading(true);
-    await fetchList(
+    const list = await fetchList(
       () => api.get("/projects"),
       setProjects,
       (text) => text && setMessage({ type: "error", text }),
       "projects"
     );
     setLoading(false);
+    return list;
   };
 
   useEffect(() => {
@@ -68,21 +72,27 @@ function ProjectsManager() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.title.trim() || !form.description.trim()) {
+      setMessage({ type: "error", text: "Title and description are required." });
+      return;
+    }
     setSaving(true);
     setMessage({ type: "", text: "" });
     try {
       const body = buildFormData();
+      let saved;
       if (editing) {
         const { data } = await api.post(`/projects/${editing._id}`, body);
-        assertSavedItem(data, "Project");
-        setMessage({ type: "success", text: "Project updated" });
+        saved = data;
+        setMessage({ type: "success", text: "Project updated on server.", viewLink: viewSiteLink("projects") });
       } else {
         const { data } = await api.post("/projects", body);
-        assertSavedItem(data, "Project");
-        setMessage({ type: "success", text: "Project added" });
+        saved = data;
+        setMessage({ type: "success", text: "Project added on server.", viewLink: viewSiteLink("projects") });
       }
       setModalOpen(false);
-      await loadProjects();
+      const list = await loadProjects();
+      verifyInList(saved, list, "Project");
     } catch (err) {
       setMessage({
         type: "error",
@@ -110,7 +120,7 @@ function ProjectsManager() {
 
   return (
     <>
-      {message.text && <div className={`admin-alert admin-alert-${message.type}`}>{message.text}</div>}
+      <SaveAlert message={message} onClose={() => setMessage({ type: "", text: "" })} />
       <div className="admin-panel">
         <div className="admin-panel-header">
           <h2>Projects ({projects.length})</h2>

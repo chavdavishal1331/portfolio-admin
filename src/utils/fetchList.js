@@ -5,10 +5,11 @@ export async function fetchList(request, setItems, setError, emptyLabel) {
     if (!Array.isArray(data)) {
       setItems([]);
       setError?.(`Could not load ${emptyLabel} (invalid server response).`);
-      return;
+      return [];
     }
     setItems(data);
     setError?.("");
+    return data;
   } catch (err) {
     setItems([]);
     const msg =
@@ -16,6 +17,7 @@ export async function fetchList(request, setItems, setError, emptyLabel) {
       err.message ||
       `Could not load ${emptyLabel}. Check login and backend URL.`;
     setError?.(msg);
+    return [];
   }
 }
 

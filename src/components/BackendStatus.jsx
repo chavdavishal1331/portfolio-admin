@@ -50,7 +50,7 @@ function BackendStatus() {
           {frontendUrl}
         </a>
         {" "}
-        — content you save here appears there after deploy.
+        — after saving, click “View on portfolio” or switch to that tab (auto-refresh).
       </p>
       <p className="admin-status-hint">
         Images on Render need Cloudinary env vars on the backend, or uploads may

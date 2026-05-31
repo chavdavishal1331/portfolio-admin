@@ -3,6 +3,8 @@ import api from "../api/api";
 import { getImageUrl } from "../utils/imageUrl";
 import { getApiErrorMessage } from "../utils/apiError";
 import { assertSavedItem } from "../utils/fetchList";
+import { viewSiteLink } from "../utils/viewSite";
+import SaveAlert from "../components/SaveAlert";
 import { usePreloadedSrc } from "../hooks/usePreloadedSrc";
 
 const empty = {
@@ -102,6 +104,17 @@ function ProfileManager() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.name.trim()) {
+      setMessage({ type: "error", text: "Full name is required (shows on your portfolio)." });
+      return;
+    }
+    if (!form.shortBio.trim() && !form.description.trim()) {
+      setMessage({
+        type: "error",
+        text: "Add a Hero description or About text so visitors see your content.",
+      });
+      return;
+    }
     setSaving(true);
     setMessage({ type: "", text: "" });
     try {
@@ -110,9 +123,11 @@ function ProfileManager() {
       if (imageFile) body.append("image", imageFile);
       if (resumeFile) body.append("resume", resumeFile);
 
-      // POST (not PUT) — multipart file upload is reliable on all hosts
       const { data } = await api.post("/profile", body);
       assertSavedItem(data, "Profile");
+      if (!data.name?.trim()) {
+        throw new Error("Profile was not saved correctly. Try again.");
+      }
       clearBlobPreview();
       setImageFile(null);
       setResumeFile(null);
@@ -122,7 +137,11 @@ function ProfileManager() {
         setCurrentResume,
         setImageCacheKey,
       });
-      setMessage({ type: "success", text: "Profile saved successfully!" });
+      setMessage({
+        type: "success",
+        text: "Profile saved on server.",
+        viewLink: viewSiteLink("home"),
+      });
     } catch (err) {
       setMessage({
         type: "error",
@@ -147,17 +166,13 @@ function ProfileManager() {
         <h2>Profile — Hero & About</h2>
       </div>
 
-      {message.text && (
-        <div className={`admin-alert admin-alert-${message.type}`}>
-          {message.text}
-        </div>
-      )}
+      <SaveAlert message={message} onClose={() => setMessage({ type: "", text: "" })} />
 
       <form className="admin-form" onSubmit={handleSubmit}>
         <div className="admin-form-row">
           <div className="admin-form-group">
             <label>Full Name</label>
-            <input name="name" value={form.name} onChange={handleChange} />
+            <input name="name" value={form.name} onChange={handleChange} required />
           </div>
           <div className="admin-form-group">
             <label>Primary Role</label>

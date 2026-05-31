@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import api from "../api/api";
 import { getApiErrorMessage } from "../utils/apiError";
-import { assertSavedItem, fetchList } from "../utils/fetchList";
+import { fetchList } from "../utils/fetchList";
+import { verifyInList } from "../utils/verifySave";
+import { viewSiteLink } from "../utils/viewSite";
+import SaveAlert from "../components/SaveAlert";
 import { ICON_OPTIONS, getSkillIcon } from "../utils/skillIcons";
 
 const emptySkill = { name: "", percentage: 80, icon: "FaReact", color: "#8B5CF6" };
@@ -17,13 +20,14 @@ function SkillsManager() {
 
   const loadSkills = async () => {
     setLoading(true);
-    await fetchList(
+    const list = await fetchList(
       () => api.get("/skills"),
       setSkills,
       (text) => text && setMessage({ type: "error", text }),
       "skills"
     );
     setLoading(false);
+    return list;
   };
 
   useEffect(() => {
@@ -49,18 +53,26 @@ function SkillsManager() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const name = form.name.trim();
+    if (!name) {
+      setMessage({ type: "error", text: "Skill name is required." });
+      return;
+    }
+    const payload = { ...form, name };
     try {
+      let saved;
       if (editing) {
-        const { data } = await api.put(`/skills/${editing._id}`, form);
-        assertSavedItem(data, "Skill");
-        setMessage({ type: "success", text: "Skill updated" });
+        const { data } = await api.put(`/skills/${editing._id}`, payload);
+        saved = data;
+        setMessage({ type: "success", text: "Skill updated on server.", viewLink: viewSiteLink("skills") });
       } else {
-        const { data } = await api.post("/skills", form);
-        assertSavedItem(data, "Skill");
-        setMessage({ type: "success", text: "Skill added" });
+        const { data } = await api.post("/skills", payload);
+        saved = data;
+        setMessage({ type: "success", text: "Skill added on server.", viewLink: viewSiteLink("skills") });
       }
       setModalOpen(false);
-      await loadSkills();
+      const list = await loadSkills();
+      verifyInList(saved, list, "Skill");
     } catch (err) {
       setMessage({
         type: "error",
@@ -90,9 +102,7 @@ function SkillsManager() {
 
   return (
     <>
-      {message.text && (
-        <div className={`admin-alert admin-alert-${message.type}`}>{message.text}</div>
-      )}
+      <SaveAlert message={message} onClose={() => setMessage({ type: "", text: "" })} />
 
       <div className="admin-panel">
         <div className="admin-panel-header">

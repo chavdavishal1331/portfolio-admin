@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import api from "../api/api";
 import { getApiErrorMessage } from "../utils/apiError";
-import { assertSavedItem, fetchList } from "../utils/fetchList";
+import { fetchList } from "../utils/fetchList";
+import { verifyInList } from "../utils/verifySave";
+import { viewSiteLink } from "../utils/viewSite";
+import SaveAlert from "../components/SaveAlert";
 
 const emptyExp = { company: "", role: "", year: "", duration: "", color: "#8B5CF6" };
 
@@ -16,13 +19,14 @@ function ExperienceManager() {
 
   const loadItems = async () => {
     setLoading(true);
-    await fetchList(
+    const list = await fetchList(
       () => api.get("/experience"),
       setItems,
       (text) => text && setMessage({ type: "error", text }),
       "experience"
     );
     setLoading(false);
+    return list;
   };
 
   useEffect(() => {
@@ -38,18 +42,27 @@ function ExperienceManager() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const role = form.role.trim();
+    const company = form.company.trim();
+    if (!role || !company) {
+      setMessage({ type: "error", text: "Role and company are required." });
+      return;
+    }
+    const payload = { ...form, role, company };
     try {
+      let saved;
       if (editing) {
-        const { data } = await api.put(`/experience/${editing._id}`, form);
-        assertSavedItem(data, "Experience");
-        setMessage({ type: "success", text: "Experience updated" });
+        const { data } = await api.put(`/experience/${editing._id}`, payload);
+        saved = data;
+        setMessage({ type: "success", text: "Experience updated on server.", viewLink: viewSiteLink("experience") });
       } else {
-        const { data } = await api.post("/experience", form);
-        assertSavedItem(data, "Experience");
-        setMessage({ type: "success", text: "Experience added" });
+        const { data } = await api.post("/experience", payload);
+        saved = data;
+        setMessage({ type: "success", text: "Experience added on server.", viewLink: viewSiteLink("experience") });
       }
       setModalOpen(false);
-      await loadItems();
+      const list = await loadItems();
+      verifyInList(saved, list, "Experience");
     } catch (err) {
       setMessage({
         type: "error",
@@ -73,7 +86,7 @@ function ExperienceManager() {
 
   return (
     <>
-      {message.text && <div className={`admin-alert admin-alert-${message.type}`}>{message.text}</div>}
+      <SaveAlert message={message} onClose={() => setMessage({ type: "", text: "" })} />
       <div className="admin-panel">
         <div className="admin-panel-header">
           <h2>Experience ({items.length})</h2>
