@@ -85,7 +85,10 @@ function AdminLayout() {
 
         <div className="admin-sidebar-footer">
           <a
-            href="http://localhost:3000"
+            href={
+              import.meta.env.VITE_FRONTEND_URL ||
+              "https://portfolio-frontend-oc7t.onrender.com"
+            }
             target="_blank"
             rel="noopener noreferrer"
             className="admin-btn admin-btn-outline admin-btn-full"

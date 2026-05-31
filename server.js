@@ -8,26 +8,42 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const BACKEND =
   process.env.BACKEND_URL || "https://portfolio-backend-ro4m.onrender.com";
+const distDir = path.join(__dirname, "dist");
 
-// Proxy /api/* → backend /api/* (same path on target — see http-proxy-middleware docs)
+const proxyOptions = {
+  target: BACKEND,
+  changeOrigin: true,
+  on: {
+    error(err, req, res) {
+      console.error("Proxy error:", err.message);
+      if (!res.headersSent) {
+        res.status(502).json({
+          message: "Backend unavailable. Wait 30 seconds and try again.",
+        });
+      }
+    },
+  },
+};
+
+// /api/auth/* → backend /api/auth/*
 app.use(
   "/api",
   createProxyMiddleware({
-    target: `${BACKEND}/api`,
-    changeOrigin: true,
+    ...proxyOptions,
+    pathRewrite: (p) => (p.startsWith("/api") ? p : `/api${p}`),
   })
 );
 
-const distDir = path.join(__dirname, "dist");
-app.use(express.static(distDir));
-app.use("/admin", express.static(distDir));
+// Profile / project images stored on backend disk
+app.use("/uploads", createProxyMiddleware(proxyOptions));
 
-// SPA fallback — /login, /register, /dashboard, etc.
-app.use((req, res, next) => {
-  if (req.method !== "GET" || req.path.startsWith("/api")) return next();
+app.use(express.static(distDir, { index: "index.html" }));
+
+// SPA: /login, /register, /dashboard — must return index.html (fixes Render 404 on refresh)
+app.get(/^(?!\/api|\/uploads).*/, (req, res) => {
   res.sendFile(path.join(distDir, "index.html"));
 });
 
 app.listen(PORT, () => {
-  console.log(`Admin panel running on port ${PORT}`);
+  console.log(`Admin panel on port ${PORT} → ${BACKEND}`);
 });
