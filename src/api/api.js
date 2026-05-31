@@ -3,20 +3,17 @@ import axios from "axios";
 export const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL || "https://portfolio-backend-ro4m.onrender.com";
 
-// Empty VITE_API_BASE = use same-origin /api proxy (Web Service on Render)
-const useProxy = import.meta.env.VITE_API_BASE === "";
-
-export const API_BASE = useProxy ? "" : import.meta.env.VITE_API_BASE || BACKEND_URL;
+// Same-origin /api when admin is served from backend (/admin) or local dev proxy
+export const API_BASE = "";
 
 const api = axios.create({
-  baseURL: useProxy ? "/api" : `${API_BASE}/api`,
+  baseURL: "/api",
   timeout: 60000,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// 🔐 Token interceptor (Admin login mate)
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("adminToken");
 
@@ -31,12 +28,10 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// ❌ Global error handler (optional but useful)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // token expired / invalid
       localStorage.removeItem("adminToken");
       window.location.hash = "#/login";
     }
