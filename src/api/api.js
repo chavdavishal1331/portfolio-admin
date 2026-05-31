@@ -30,7 +30,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // token expired / invalid
       localStorage.removeItem("adminToken");
-      window.location.href = "/login";
+      window.location.hash = "#/login";
     }
     return Promise.reject(error);
   }
