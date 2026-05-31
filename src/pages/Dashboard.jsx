@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/api";
 import { getApiErrorMessage } from "../utils/apiError";
+import BackendStatus from "../components/BackendStatus";
 
 function Dashboard() {
   const [stats, setStats] = useState({
@@ -76,6 +77,7 @@ function Dashboard() {
 
   return (
     <>
+      <BackendStatus />
       {notice.text && (
         <div className={`admin-alert admin-alert-${notice.type}`}>{notice.text}</div>
       )}

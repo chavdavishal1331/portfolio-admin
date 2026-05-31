@@ -1,12 +1,10 @@
 import axios from "axios";
+import { getApiBase, getBackendUrl } from "../utils/getApiBase.js";
 
-export const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL || "https://portfolio-backend-ro4m.onrender.com";
-
-// Dev: Vite proxy. Production: direct backend (Render static deploy has no /api proxy).
+export const BACKEND_URL = getBackendUrl();
 export const API_BASE = import.meta.env.DEV ? "" : BACKEND_URL;
 
-const apiBase = import.meta.env.DEV ? "/api" : `${BACKEND_URL}/api`;
+const apiBase = getApiBase();
 
 const api = axios.create({
   baseURL: apiBase,
