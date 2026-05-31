@@ -6,6 +6,10 @@ export const API_BASE = "https://portfolio-backend-ro4m.onrender.com";
 // ⚡ Axios instance
 const api = axios.create({
   baseURL: `${API_BASE}/api`,
+  timeout: 60000,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 // 🔐 Token interceptor (Admin login mate)

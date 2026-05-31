@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getApiErrorMessage } from "../utils/apiError";
 
 function Register() {
   const [name, setName] = useState("");
@@ -35,9 +36,7 @@ function Register() {
       await register(name, email, password);
       navigate("/dashboard");
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Registration failed. Try again."
-      );
+      setError(getApiErrorMessage(err, "Registration failed. Try again."));
     } finally {
       setLoading(false);
     }

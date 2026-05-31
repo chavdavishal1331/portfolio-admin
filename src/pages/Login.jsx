@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getApiErrorMessage } from "../utils/apiError";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -22,9 +23,7 @@ function Login() {
       await login(email, password);
       navigate("/dashboard");
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Login failed. Check credentials."
-      );
+      setError(getApiErrorMessage(err, "Login failed. Check credentials."));
     } finally {
       setLoading(false);
     }
