@@ -3,12 +3,12 @@ import axios from "axios";
 export const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL || "https://portfolio-backend-ro4m.onrender.com";
 
-// Always same-origin /api (Vite proxy in dev, Express proxy on Render) — avoids CORS issues.
-export const API_BASE = "";
+// Dev: Vite proxy. Prod: direct backend (CORS enabled) — Render API proxy is unreliable for POST.
+const apiBase = import.meta.env.DEV ? "/api" : `${BACKEND_URL}/api`;
 
 const api = axios.create({
-  baseURL: "/api",
-  timeout: 60000,
+  baseURL: apiBase,
+  timeout: 120000,
   headers: {
     "Content-Type": "application/json",
   },
