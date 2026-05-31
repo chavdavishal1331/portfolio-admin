@@ -348,6 +348,12 @@ body {
   border-radius: 8px;
   object-fit: cover;
   border: 1px solid var(--admin-border);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.admin-image-preview.is-visible {
+  opacity: 1;
 }
 
 .admin-image-preview-lg { width: 120px; height: 80px; }

@@ -25,6 +25,12 @@ api.interceptors.request.use((config) => {
     delete config.headers["Content-Type"];
   }
 
+  if ((config.method || "get").toLowerCase() === "get") {
+    config.headers["Cache-Control"] = "no-cache";
+    config.headers.Pragma = "no-cache";
+    config.params = { ...config.params, _t: Date.now() };
+  }
+
   return config;
 });
 

@@ -36,6 +36,7 @@ function applyProfileToState(data, setters) {
 
   const version = data.updatedAt || data.image || "";
   setImageCacheKey(version);
+  setPreviewVisible(false);
   setPreview(data.image ? getImageUrl(data.image, version) : "");
   setCurrentResume(data.resume || "");
 }
@@ -45,6 +46,7 @@ function ProfileManager() {
   const [imageFile, setImageFile] = useState(null);
   const [resumeFile, setResumeFile] = useState(null);
   const [preview, setPreview] = useState("");
+  const [previewVisible, setPreviewVisible] = useState(false);
   const [imageCacheKey, setImageCacheKey] = useState("");
   const [currentResume, setCurrentResume] = useState("");
   const [loading, setLoading] = useState(true);
@@ -232,6 +234,7 @@ function ProfileManager() {
                 setImageFile(file);
                 const blobUrl = URL.createObjectURL(file);
                 blobPreviewRef.current = blobUrl;
+                setPreviewVisible(false);
                 setPreview(blobUrl);
               }
             }}
@@ -241,7 +244,9 @@ function ProfileManager() {
               key={`${imageCacheKey}-${preview}`}
               src={preview}
               alt="Profile preview"
-              className="admin-image-preview"
+              className={`admin-image-preview ${previewVisible ? "is-visible" : ""}`}
+              onLoad={() => setPreviewVisible(true)}
+              onError={() => setPreviewVisible(true)}
             />
           )}
           {imageFile && (
