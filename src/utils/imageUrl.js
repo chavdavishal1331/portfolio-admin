@@ -1,10 +1,15 @@
 import { BACKEND_URL } from "../api/api";
 
+function appendCacheBust(url, cacheKey) {
+  if (!cacheKey) return url;
+  const v = encodeURIComponent(String(cacheKey));
+  return `${url}${url.includes("?") ? "&" : "?"}v=${v}`;
+}
+
 /**
- * Full URL for images/PDFs in admin previews.
- * Uploads live on the backend — always use BACKEND_URL (admin /uploads proxy is not reliable on Render).
+ * Full URL for images/PDFs. Pass updatedAt (or any version) to avoid stale browser cache.
  */
-export function getImageUrl(path) {
+export function getImageUrl(path, cacheKey) {
   if (!path) return "";
 
   const base = BACKEND_URL.replace(/\/$/, "");
@@ -12,11 +17,11 @@ export function getImageUrl(path) {
   if (path.startsWith("http://") || path.startsWith("https://")) {
     if (/localhost|127\.0\.0\.1/.test(path)) {
       const uploadsPath = path.match(/\/uploads\/[^?#]+/)?.[0];
-      if (uploadsPath) return `${base}${uploadsPath}`;
+      if (uploadsPath) return appendCacheBust(`${base}${uploadsPath}`, cacheKey);
     }
-    return path;
+    return appendCacheBust(path, cacheKey);
   }
 
   const normalized = path.startsWith("/") ? path : `/${path}`;
-  return `${base}${normalized}`;
+  return appendCacheBust(`${base}${normalized}`, cacheKey);
 }

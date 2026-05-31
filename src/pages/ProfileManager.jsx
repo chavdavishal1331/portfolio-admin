@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import api from "../api/api";
 import { getImageUrl } from "../utils/imageUrl";
 
@@ -16,39 +16,63 @@ const empty = {
   location: "",
 };
 
+function applyProfileToState(data, setters) {
+  if (!data) return;
+  const { setForm, setPreview, setCurrentResume, setImageCacheKey } = setters;
+
+  setForm({
+    name: data.name || "",
+    role: data.role || "",
+    roles: Array.isArray(data.roles) ? data.roles.join(", ") : "",
+    shortBio: data.shortBio || "",
+    description: data.description || "",
+    experience: data.experience || "",
+    projects: data.projects || "",
+    clients: data.clients || "",
+    email: data.email || "",
+    phone: data.phone || "",
+    location: data.location || "",
+  });
+
+  const version = data.updatedAt || data.image || "";
+  setImageCacheKey(version);
+  setPreview(data.image ? getImageUrl(data.image, version) : "");
+  setCurrentResume(data.resume || "");
+}
+
 function ProfileManager() {
   const [form, setForm] = useState(empty);
   const [imageFile, setImageFile] = useState(null);
   const [resumeFile, setResumeFile] = useState(null);
   const [preview, setPreview] = useState("");
+  const [imageCacheKey, setImageCacheKey] = useState("");
   const [currentResume, setCurrentResume] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const blobPreviewRef = useRef(null);
+
+  const clearBlobPreview = () => {
+    if (blobPreviewRef.current) {
+      URL.revokeObjectURL(blobPreviewRef.current);
+      blobPreviewRef.current = null;
+    }
+  };
+
+  const loadProfile = () =>
+    api.get("/profile").then(({ data }) => {
+      clearBlobPreview();
+      applyProfileToState(data, {
+        setForm,
+        setPreview,
+        setCurrentResume,
+        setImageCacheKey,
+      });
+    });
 
   useEffect(() => {
-    api
-      .get("/profile")
-      .then(({ data }) => {
-        if (data) {
-          setForm({
-            name: data.name || "",
-            role: data.role || "",
-            roles: Array.isArray(data.roles) ? data.roles.join(", ") : "",
-            shortBio: data.shortBio || "",
-            description: data.description || "",
-            experience: data.experience || "",
-            projects: data.projects || "",
-            clients: data.clients || "",
-            email: data.email || "",
-            phone: data.phone || "",
-            location: data.location || "",
-          });
-          if (data.image) setPreview(getImageUrl(data.image));
-          if (data.resume) setCurrentResume(data.resume);
-        }
-      })
-      .finally(() => setLoading(false));
+    loadProfile().finally(() => setLoading(false));
+    return () => clearBlobPreview();
   }, []);
 
   const handleChange = (e) => {
@@ -65,27 +89,18 @@ function ProfileManager() {
       if (imageFile) body.append("image", imageFile);
       if (resumeFile) body.append("resume", resumeFile);
 
-      const { data } = await api.put("/profile", body);
-      setMessage({ type: "success", text: "Profile saved successfully!" });
+      // POST (not PUT) — multipart file upload is reliable on all hosts
+      const { data } = await api.post("/profile", body);
+      clearBlobPreview();
       setImageFile(null);
       setResumeFile(null);
-      if (data) {
-        setForm({
-          name: data.name || "",
-          role: data.role || "",
-          roles: Array.isArray(data.roles) ? data.roles.join(", ") : "",
-          shortBio: data.shortBio || "",
-          description: data.description || "",
-          experience: data.experience || "",
-          projects: data.projects || "",
-          clients: data.clients || "",
-          email: data.email || "",
-          phone: data.phone || "",
-          location: data.location || "",
-        });
-        if (data.image) setPreview(getImageUrl(data.image));
-        if (data.resume) setCurrentResume(data.resume);
-      }
+      applyProfileToState(data, {
+        setForm,
+        setPreview,
+        setCurrentResume,
+        setImageCacheKey,
+      });
+      setMessage({ type: "success", text: "Profile saved successfully!" });
     } catch (err) {
       setMessage({
         type: "error",
@@ -194,7 +209,11 @@ function ProfileManager() {
           {currentResume && !resumeFile && (
             <p className="file-hint">
               Current resume uploaded —{" "}
-              <a href={getImageUrl(currentResume)} target="_blank" rel="noopener noreferrer">
+              <a
+                href={getImageUrl(currentResume, imageCacheKey)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 View PDF
               </a>
             </p>
@@ -209,12 +228,25 @@ function ProfileManager() {
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) {
+                clearBlobPreview();
                 setImageFile(file);
-                setPreview(URL.createObjectURL(file));
+                const blobUrl = URL.createObjectURL(file);
+                blobPreviewRef.current = blobUrl;
+                setPreview(blobUrl);
               }
             }}
           />
-          {preview && <img src={preview} alt="" className="admin-image-preview" />}
+          {preview && (
+            <img
+              key={`${imageCacheKey}-${preview}`}
+              src={preview}
+              alt="Profile preview"
+              className="admin-image-preview"
+            />
+          )}
+          {imageFile && (
+            <p className="file-hint">New image selected — click Save Profile to upload.</p>
+          )}
         </div>
 
         <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>

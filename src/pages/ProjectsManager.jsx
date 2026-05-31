@@ -40,7 +40,7 @@ function ProjectsManager() {
       liveLink: p.liveLink || "",
     });
     setImageFile(null);
-    setPreview(p.image ? getImageUrl(p.image) : "");
+    setPreview(p.image ? getImageUrl(p.image, p.updatedAt) : "");
     setModalOpen(true);
   };
 
@@ -115,7 +115,7 @@ function ProjectsManager() {
                 <tr className="empty-row"><td colSpan={4} className="empty-cell">No projects yet.</td></tr>
               ) : projects.map((p) => (
                 <tr key={p._id}>
-                  <td data-label="Image">{p.image ? <img src={getImageUrl(p.image)} alt="" className="admin-project-thumb" /> : "—"}</td>
+                  <td data-label="Image">{p.image ? <img src={getImageUrl(p.image, p.updatedAt)} alt="" className="admin-project-thumb" key={p.updatedAt} /> : "—"}</td>
                   <td data-label="Title">{p.title}</td>
                   <td data-label="Tech">{p.tech}</td>
                   <td data-label="Actions">
