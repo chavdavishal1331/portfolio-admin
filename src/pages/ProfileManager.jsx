@@ -71,16 +71,25 @@ function ProfileManager() {
     setBlobPreview("");
   };
 
-  const loadProfile = () =>
-    api.get("/profile").then(({ data }) => {
+  const loadProfile = async () => {
+    try {
+      const { data } = await api.get("/profile");
       clearBlobPreview();
-      applyProfileToState(data, {
-        setForm,
-        setPreview,
-        setCurrentResume,
-        setImageCacheKey,
+      if (data && typeof data === "object" && data._id) {
+        applyProfileToState(data, {
+          setForm,
+          setPreview,
+          setCurrentResume,
+          setImageCacheKey,
+        });
+      }
+    } catch (err) {
+      setMessage({
+        type: "error",
+        text: getApiErrorMessage(err, "Could not load profile"),
       });
-    });
+    }
+  };
 
   useEffect(() => {
     loadProfile().finally(() => setLoading(false));

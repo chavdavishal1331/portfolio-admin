@@ -20,7 +20,7 @@ class ErrorBoundary extends Component {
               onClick={() => {
                 localStorage.removeItem("adminToken");
                 localStorage.removeItem("adminUser");
-                window.location.href = "/login";
+                window.location.href = "/#/login";
               }}
             >
               Go to Login
