@@ -6,24 +6,24 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
-const BACKEND = process.env.BACKEND_URL || "https://portfolio-backend-ro4m.onrender.com";
+const BACKEND =
+  process.env.BACKEND_URL || "https://portfolio-backend-ro4m.onrender.com";
 
+// Proxy /api/* → backend /api/* (same path on target — see http-proxy-middleware docs)
 app.use(
   "/api",
   createProxyMiddleware({
-    target: BACKEND,
+    target: `${BACKEND}/api`,
     changeOrigin: true,
-    pathRewrite: (path) => (path.startsWith("/api") ? path : `/api${path}`),
   })
 );
 
 const distDir = path.join(__dirname, "dist");
 app.use(express.static(distDir));
-// Older builds used base "/admin/" — keep assets reachable at /admin/assets/*
 app.use("/admin", express.static(distDir));
 
 app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "dist", "index.html"));
+  res.sendFile(path.join(distDir, "index.html"));
 });
 
 app.listen(PORT, () => {
