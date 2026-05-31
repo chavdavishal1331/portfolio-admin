@@ -43,13 +43,11 @@ function ExperienceManager() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const role = form.role.trim();
-    const company = form.company.trim();
-    if (!role || !company) {
-      setMessage({ type: "error", text: "Role and company are required." });
-      return;
-    }
-    const payload = { ...form, role, company };
+    const payload = {
+      ...form,
+      role: form.role.trim(),
+      company: form.company.trim(),
+    };
     try {
       let saved;
       if (editing) {
@@ -130,11 +128,11 @@ function ExperienceManager() {
             <form className="admin-form" onSubmit={handleSubmit}>
               <div className="admin-form-group">
                 <label>Role</label>
-                <input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} required />
+                <input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} />
               </div>
               <div className="admin-form-group">
                 <label>Company</label>
-                <input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} required />
+                <input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
               </div>
               <div className="admin-form-row">
                 <div className="admin-form-group">

@@ -73,10 +73,6 @@ function ProjectsManager() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.title.trim() || !form.description.trim()) {
-      setMessage({ type: "error", text: "Title and description are required." });
-      return;
-    }
     setSaving(true);
     setMessage({ type: "", text: "" });
     try {
@@ -164,12 +160,12 @@ function ProjectsManager() {
             <h3>{editing ? "Edit Project" : "Add Project"}</h3>
             <form className="admin-form" onSubmit={handleSubmit}>
               <div className="admin-form-group">
-                <label>Title *</label>
-                <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+                <label>Title</label>
+                <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
               </div>
               <div className="admin-form-group">
-                <label>Description *</label>
-                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
+                <label>Description</label>
+                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
               </div>
               <div className="admin-form-group">
                 <label>Tech Stack (optional)</label>

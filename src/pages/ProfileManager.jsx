@@ -105,17 +105,6 @@ function ProfileManager() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim()) {
-      setMessage({ type: "error", text: "Full name is required (shows on your portfolio)." });
-      return;
-    }
-    if (!form.shortBio.trim() && !form.description.trim()) {
-      setMessage({
-        type: "error",
-        text: "Add a Hero description or About text so visitors see your content.",
-      });
-      return;
-    }
     setSaving(true);
     setMessage({ type: "", text: "" });
     try {
@@ -126,9 +115,6 @@ function ProfileManager() {
 
       const { data } = await api.post("/profile", body);
       assertSavedItem(data, "Profile");
-      if (!data.name?.trim()) {
-        throw new Error("Profile was not saved correctly. Try again.");
-      }
       clearBlobPreview();
       setImageFile(null);
       setResumeFile(null);
@@ -170,20 +156,22 @@ function ProfileManager() {
 
       <SaveAlert message={message} onClose={() => setMessage({ type: "", text: "" })} />
 
-      <form className="admin-form" onSubmit={handleSubmit}>
+      <p className="admin-form-hint">All fields are optional — fill what you want and save.</p>
+
+      <form className="admin-form" onSubmit={handleSubmit} noValidate>
         <div className="admin-form-row">
           <div className="admin-form-group">
-            <label>Full Name</label>
-            <input name="name" value={form.name} onChange={handleChange} required />
+            <label>Full Name (optional)</label>
+            <input name="name" value={form.name} onChange={handleChange} />
           </div>
           <div className="admin-form-group">
-            <label>Primary Role</label>
+            <label>Primary Role (optional)</label>
             <input name="role" value={form.role} onChange={handleChange} />
           </div>
         </div>
 
         <div className="admin-form-group">
-          <label>Animated Roles (comma separated)</label>
+          <label>Animated Roles (optional)</label>
           <input
             name="roles"
             value={form.roles}
@@ -193,12 +181,12 @@ function ProfileManager() {
         </div>
 
         <div className="admin-form-group">
-          <label>Hero Description</label>
+          <label>Hero Description (optional)</label>
           <textarea name="shortBio" value={form.shortBio} onChange={handleChange} />
         </div>
 
         <div className="admin-form-group">
-          <label>About Text</label>
+          <label>About Text (optional)</label>
           <textarea name="description" value={form.description} onChange={handleChange} />
         </div>
 
@@ -220,7 +208,7 @@ function ProfileManager() {
         <div className="admin-form-row">
           <div className="admin-form-group">
             <label>Email</label>
-            <input type="email" name="email" value={form.email} onChange={handleChange} />
+            <input type="text" name="email" value={form.email} onChange={handleChange} />
           </div>
           <div className="admin-form-group">
             <label>Phone</label>

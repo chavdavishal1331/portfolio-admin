@@ -400,6 +400,12 @@ body {
 .admin-image-preview-lg { width: 120px; height: 80px; }
 .admin-project-thumb { width: 56px; height: 40px; border-radius: 6px; object-fit: cover; }
 
+.admin-form-hint {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: var(--admin-muted);
+}
+
 .file-hint {
   margin-top: 8px;
   font-size: 0.85rem;

@@ -54,12 +54,7 @@ function SkillsManager() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const name = form.name.trim();
-    if (!name) {
-      setMessage({ type: "error", text: "Skill name is required." });
-      return;
-    }
-    const payload = { ...form, name };
+    const payload = { ...form, name: form.name.trim() };
     try {
       let saved;
       if (editing) {
@@ -169,13 +164,13 @@ function SkillsManager() {
             <form className="admin-form" onSubmit={handleSubmit}>
               <div className="admin-form-group">
                 <label>Name</label>
-                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </div>
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label>Percentage</label>
                   <input type="number" min="0" max="100" value={form.percentage}
-                    onChange={(e) => setForm({ ...form, percentage: Number(e.target.value) })} required />
+                    onChange={(e) => setForm({ ...form, percentage: Number(e.target.value) })} />
                 </div>
                 <div className="admin-form-group">
                   <label>Color</label>
