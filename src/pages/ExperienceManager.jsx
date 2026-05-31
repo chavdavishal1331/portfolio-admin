@@ -3,7 +3,8 @@ import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import api from "../api/api";
 import { getApiErrorMessage } from "../utils/apiError";
 import { fetchList } from "../utils/fetchList";
-import { verifyInList } from "../utils/verifySave";
+import { afterContentSave } from "../utils/afterSave";
+import { notifyPortfolioUpdate } from "../utils/notifyPortfolioUpdate";
 import { viewSiteLink } from "../utils/viewSite";
 import SaveAlert from "../components/SaveAlert";
 
@@ -54,15 +55,17 @@ function ExperienceManager() {
       if (editing) {
         const { data } = await api.put(`/experience/${editing._id}`, payload);
         saved = data;
-        setMessage({ type: "success", text: "Experience updated on server.", viewLink: viewSiteLink("experience") });
       } else {
         const { data } = await api.post("/experience", payload);
         saved = data;
-        setMessage({ type: "success", text: "Experience added on server.", viewLink: viewSiteLink("experience") });
       }
       setModalOpen(false);
-      const list = await loadItems();
-      verifyInList(saved, list, "Experience");
+      await afterContentSave(loadItems, saved, "Experience");
+      setMessage({
+        type: "success",
+        text: editing ? "Experience updated on server." : "Experience added on server.",
+        viewLink: viewSiteLink("experience"),
+      });
     } catch (err) {
       setMessage({
         type: "error",
@@ -75,8 +78,9 @@ function ExperienceManager() {
     if (!window.confirm("Delete this entry?")) return;
     try {
       await api.delete(`/experience/${id}`);
-      setMessage({ type: "success", text: "Deleted" });
       await loadItems();
+      notifyPortfolioUpdate();
+      setMessage({ type: "success", text: "Deleted" });
     } catch {
       setMessage({ type: "error", text: "Failed to delete" });
     }

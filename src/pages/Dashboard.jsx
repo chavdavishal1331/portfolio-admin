@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import api from "../api/api";
 import { getApiErrorMessage } from "../utils/apiError";
 import BackendStatus from "../components/BackendStatus";
+import { notifyPortfolioUpdate } from "../utils/notifyPortfolioUpdate";
 
 function Dashboard() {
   const [stats, setStats] = useState({
@@ -52,6 +53,7 @@ function Dashboard() {
     setNotice({ type: "", text: "" });
     try {
       const { data } = await api.post("/admin/clear-content");
+      notifyPortfolioUpdate();
       setNotice({
         type: "success",
         text: data.message || "All content deleted",

@@ -1,17 +1,18 @@
 import axios from "axios";
-import { getApiBase, getBackendUrl } from "../utils/getApiBase.js";
+import { getApiBase, getBackendUrl, initApiBase } from "../utils/getApiBase.js";
 
-export const BACKEND_URL = getBackendUrl();
-export const API_BASE = import.meta.env.DEV ? "" : BACKEND_URL;
-
-const apiBase = getApiBase();
+/** Resolved at request time so same-origin proxy URL is correct on Render. */
+export function getBackendUrlForAssets() {
+  return getBackendUrl();
+}
 
 const api = axios.create({
-  baseURL: apiBase,
   timeout: 120000,
 });
 
-api.interceptors.request.use((config) => {
+api.interceptors.request.use(async (config) => {
+  config.baseURL = await initApiBase();
+
   const token = localStorage.getItem("adminToken");
 
   if (token) {
@@ -52,7 +53,8 @@ api.interceptors.response.use(
       localStorage.removeItem("adminToken");
       localStorage.removeItem("adminUser");
       if (!window.location.hash.includes("/login")) {
-        window.location.replace("/#/login");
+        const base = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
+        window.location.replace(`${base}#/login`);
       }
     }
     return Promise.reject(error);

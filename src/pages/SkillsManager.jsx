@@ -3,7 +3,8 @@ import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import api from "../api/api";
 import { getApiErrorMessage } from "../utils/apiError";
 import { fetchList } from "../utils/fetchList";
-import { verifyInList } from "../utils/verifySave";
+import { afterContentSave } from "../utils/afterSave";
+import { notifyPortfolioUpdate } from "../utils/notifyPortfolioUpdate";
 import { viewSiteLink } from "../utils/viewSite";
 import SaveAlert from "../components/SaveAlert";
 import { ICON_OPTIONS, getSkillIcon } from "../utils/skillIcons";
@@ -64,15 +65,17 @@ function SkillsManager() {
       if (editing) {
         const { data } = await api.put(`/skills/${editing._id}`, payload);
         saved = data;
-        setMessage({ type: "success", text: "Skill updated on server.", viewLink: viewSiteLink("skills") });
       } else {
         const { data } = await api.post("/skills", payload);
         saved = data;
-        setMessage({ type: "success", text: "Skill added on server.", viewLink: viewSiteLink("skills") });
       }
       setModalOpen(false);
-      const list = await loadSkills();
-      verifyInList(saved, list, "Skill");
+      await afterContentSave(loadSkills, saved, "Skill");
+      setMessage({
+        type: "success",
+        text: editing ? "Skill updated on server." : "Skill added on server.",
+        viewLink: viewSiteLink("skills"),
+      });
     } catch (err) {
       setMessage({
         type: "error",
@@ -85,8 +88,9 @@ function SkillsManager() {
     if (!window.confirm("Delete this skill?")) return;
     try {
       await api.delete(`/skills/${id}`);
-      setMessage({ type: "success", text: "Skill deleted" });
       await loadSkills();
+      notifyPortfolioUpdate();
+      setMessage({ type: "success", text: "Skill deleted. Refresh portfolio site to see change." });
     } catch {
       setMessage({ type: "error", text: "Failed to delete" });
     }

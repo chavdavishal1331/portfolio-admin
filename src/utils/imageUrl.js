@@ -1,4 +1,4 @@
-import { BACKEND_URL } from "../api/api";
+import { getBackendUrlForAssets } from "../api/api";
 
 function appendCacheBust(url, cacheKey) {
   if (!cacheKey) return url;
@@ -12,7 +12,7 @@ function appendCacheBust(url, cacheKey) {
 export function getImageUrl(path, cacheKey) {
   if (!path) return "";
 
-  const base = BACKEND_URL.replace(/\/$/, "");
+  const base = getBackendUrlForAssets().replace(/\/$/, "");
 
   if (path.startsWith("http://") || path.startsWith("https://")) {
     if (/localhost|127\.0\.0\.1/.test(path)) {

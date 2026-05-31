@@ -4,7 +4,8 @@ import api from "../api/api";
 import { getImageUrl } from "../utils/imageUrl";
 import { getApiErrorMessage } from "../utils/apiError";
 import { fetchList } from "../utils/fetchList";
-import { verifyInList } from "../utils/verifySave";
+import { afterContentSave } from "../utils/afterSave";
+import { notifyPortfolioUpdate } from "../utils/notifyPortfolioUpdate";
 import { viewSiteLink } from "../utils/viewSite";
 import SaveAlert from "../components/SaveAlert";
 
@@ -84,15 +85,17 @@ function ProjectsManager() {
       if (editing) {
         const { data } = await api.post(`/projects/${editing._id}`, body);
         saved = data;
-        setMessage({ type: "success", text: "Project updated on server.", viewLink: viewSiteLink("projects") });
       } else {
         const { data } = await api.post("/projects", body);
         saved = data;
-        setMessage({ type: "success", text: "Project added on server.", viewLink: viewSiteLink("projects") });
       }
       setModalOpen(false);
-      const list = await loadProjects();
-      verifyInList(saved, list, "Project");
+      await afterContentSave(loadProjects, saved, "Project");
+      setMessage({
+        type: "success",
+        text: editing ? "Project updated on server." : "Project added on server.",
+        viewLink: viewSiteLink("projects"),
+      });
     } catch (err) {
       setMessage({
         type: "error",
@@ -107,8 +110,9 @@ function ProjectsManager() {
     if (!window.confirm("Delete this project?")) return;
     try {
       await api.delete(`/projects/${id}`);
-      setMessage({ type: "success", text: "Project deleted" });
       await loadProjects();
+      notifyPortfolioUpdate();
+      setMessage({ type: "success", text: "Project deleted" });
     } catch {
       setMessage({ type: "error", text: "Failed to delete" });
     }

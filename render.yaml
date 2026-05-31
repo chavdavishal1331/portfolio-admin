@@ -1,8 +1,10 @@
+# Static site: API calls go directly to portfolio-backend (CORS allowed).
+# For Node proxy deploy, use web service + VITE_SAME_ORIGIN=true instead.
 services:
   - type: web
     name: portfolio-admin
     runtime: static
-    buildCommand: npm install && npm run build
+    buildCommand: npm install && VITE_BACKEND_URL=https://portfolio-backend-ro4m.onrender.com VITE_FRONTEND_URL=https://portfolio-frontend-blu4.onrender.com npm run build
     staticPublishPath: dist
     routes:
       - type: rewrite
@@ -11,11 +13,9 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "20"
-      - key: BACKEND_URL
-        value: https://portfolio-backend-ro4m.onrender.com
-      - key: VITE_BASE_PATH
-        value: /
       - key: VITE_BACKEND_URL
         value: https://portfolio-backend-ro4m.onrender.com
       - key: VITE_FRONTEND_URL
         value: https://portfolio-frontend-blu4.onrender.com
+      - key: VITE_BASE_PATH
+        value: /

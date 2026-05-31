@@ -3,6 +3,7 @@ import api from "../api/api";
 import { getImageUrl } from "../utils/imageUrl";
 import { getApiErrorMessage } from "../utils/apiError";
 import { assertSavedItem } from "../utils/fetchList";
+import { notifyPortfolioUpdate } from "../utils/notifyPortfolioUpdate";
 import { viewSiteLink } from "../utils/viewSite";
 import SaveAlert from "../components/SaveAlert";
 import { usePreloadedSrc } from "../hooks/usePreloadedSrc";
@@ -137,6 +138,7 @@ function ProfileManager() {
         setCurrentResume,
         setImageCacheKey,
       });
+      notifyPortfolioUpdate();
       setMessage({
         type: "success",
         text: "Profile saved on server.",

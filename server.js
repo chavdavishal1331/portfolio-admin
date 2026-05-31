@@ -50,10 +50,6 @@ function proxyToBackend(req, res) {
   req.pipe(proxyReq);
 }
 
-app.get("/health", (_req, res) => {
-  res.json({ ok: true, proxy: true, backend: BACKEND.origin });
-});
-
 app.use((req, res, next) => {
   if (req.url.startsWith("/api") || req.url.startsWith("/uploads")) {
     return proxyToBackend(req, res);

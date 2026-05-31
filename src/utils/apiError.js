@@ -18,8 +18,11 @@ export function getApiErrorMessage(err, fallback = "Something went wrong. Try ag
   if (err.code === "ECONNABORTED") {
     return "Server is waking up. Please wait a moment and try again.";
   }
-  if (err.message === "Network Error") {
-    return "Cannot connect to server. Wait 30 seconds and try again.";
+  if (err.message === "Network Error" || err.code === "ERR_NETWORK") {
+    return "Cannot connect to server. Wait 30–60 seconds (Render wake-up) and try again.";
+  }
+  if (err.response?.status === 404) {
+    return "API not found. Redeploy admin panel with latest code or click Retry on Dashboard.";
   }
   return fallback;
 }

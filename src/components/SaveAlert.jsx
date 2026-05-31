@@ -13,7 +13,7 @@ function SaveAlert({ message, onClose }) {
             rel="noopener noreferrer"
             className="admin-alert-link"
           >
-            View on portfolio →
+            View on portfolio (then Refresh if needed) →
           </a>
         </>
       )}
