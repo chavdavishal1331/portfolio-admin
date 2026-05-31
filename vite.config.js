@@ -1,9 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+// Standalone Render deploy: "/". Backend embed at /admin: "/admin/"
+const base = process.env.VITE_BASE_PATH || "/";
+
 export default defineConfig({
   plugins: [react()],
-  base: "/admin/",
+  base,
   server: {
     port: 3001,
     strictPort: false,

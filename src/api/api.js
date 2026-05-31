@@ -3,11 +3,11 @@ import axios from "axios";
 export const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL || "https://portfolio-backend-ro4m.onrender.com";
 
-// Same-origin /api when admin is served from backend (/admin) or local dev proxy
-export const API_BASE = "";
+// Dev: Vite proxy. Prod: direct backend (CORS) so admin works even without Node proxy.
+export const API_BASE = import.meta.env.DEV ? "" : BACKEND_URL;
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.DEV ? "/api" : `${BACKEND_URL}/api`,
   timeout: 60000,
   headers: {
     "Content-Type": "application/json",

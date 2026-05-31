@@ -13,11 +13,14 @@ app.use(
   createProxyMiddleware({
     target: BACKEND,
     changeOrigin: true,
-    pathRewrite: (path) => `/api${path}`,
+    pathRewrite: (path) => (path.startsWith("/api") ? path : `/api${path}`),
   })
 );
 
-app.use(express.static(path.join(__dirname, "dist")));
+const distDir = path.join(__dirname, "dist");
+app.use(express.static(distDir));
+// Older builds used base "/admin/" — keep assets reachable at /admin/assets/*
+app.use("/admin", express.static(distDir));
 
 app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, "dist", "index.html"));
