@@ -22,7 +22,9 @@ const distDir = path.join(__dirname, "dist");
 app.use(express.static(distDir));
 app.use("/admin", express.static(distDir));
 
-app.get(/.*/, (req, res) => {
+// SPA fallback — /login, /register, /dashboard, etc.
+app.use((req, res, next) => {
+  if (req.method !== "GET" || req.path.startsWith("/api")) return next();
   res.sendFile(path.join(distDir, "index.html"));
 });
 

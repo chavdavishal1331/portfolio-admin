@@ -13,7 +13,19 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
     const saved = localStorage.getItem("adminUser");
-    if (token && saved) setAdmin(JSON.parse(saved));
+
+    if (token && saved) {
+      try {
+        setAdmin(JSON.parse(saved));
+      } catch {
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("adminUser");
+        setIsAuthenticated(false);
+        setLoading(false);
+        return;
+      }
+    }
+
     setIsAuthenticated(!!token);
     setLoading(false);
   }, []);

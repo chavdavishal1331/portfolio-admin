@@ -33,7 +33,10 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("adminToken");
-      window.location.hash = "#/login";
+      localStorage.removeItem("adminUser");
+      if (!window.location.pathname.startsWith("/login")) {
+        window.location.replace("/login");
+      }
     }
     return Promise.reject(error);
   }
